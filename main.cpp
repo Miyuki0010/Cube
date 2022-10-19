@@ -11,19 +11,19 @@ float ooz;
 int xp, yp;
 int idx;
 
-float cubeWidth = 10;
-int width = 160;
-int height = 44;
+float cubeWidth = 20;
+int width = 160, height = 44;
 float zBuffer[160 * 44];
 char buffer[160 * 44];
 int backGroundASCIICode = ' ';
-int distanceCam = 60;
+int distanceCam = 100;
+float horizontalOffset;
 float K1 = 40;
 
 float incrementSpeed = 0.6;
 
 float calcX(int i, int j, int k){
-    return  j * sin(A) * cos(C) - k * cos(A) * sin(B) * cos(C) +
+    return  j * sin(A) * sin(B) * cos(C) - k * cos(A) * sin(B) * cos(C) +
             j * cos(A) * sin(C) + k * sin(A) * sin(C) + i * cos(B) * cos(C);
 }
 
@@ -42,8 +42,9 @@ void calcSurface(float cubeX, float cubeY, float cubeZ, int ch){
     y = calcY(cubeX,cubeY, cubeZ);
     z = calcZ(cubeX,cubeY, cubeZ) + distanceCam;
 
-    ooz = 1/z;
-    xp = (int)(width/2 + K1 * ooz * x *2);
+    ooz = 1 / z;
+
+    xp = (int)(width / 2 + 2 + horizontalOffset + K1 * ooz * x *2);
     yp = (int)(height/2 + K1 * ooz * y *2);
 
     idx = xp + yp  * width;
@@ -59,15 +60,22 @@ void calcSurface(float cubeX, float cubeY, float cubeZ, int ch){
 
 int main() {
     printf("\x1b[2J");
-
     while(1){
         memset(buffer, backGroundASCIICode, width * height);
         memset(zBuffer, 0, width * height * 4);
+
+        cubeWidth = 20;
+        horizontalOffset = -2 * cubeWidth;
         for (float cubeX = -cubeWidth; cubeX < cubeWidth; cubeX += incrementSpeed)
         {
             for (float cubeY = -cubeWidth; cubeY < cubeWidth; cubeY += incrementSpeed)
             {
-                calcSurface(cubeX, cubeY, -cubeWidth, '#');
+                calcSurface(cubeX, cubeY, -cubeWidth, '@');
+                calcSurface(cubeWidth, cubeY, cubeX, '$');
+                calcSurface(-cubeWidth, cubeY, -cubeX, '~');
+                calcSurface(-cubeX, cubeY, cubeWidth, '#');
+                calcSurface(cubeX, -cubeWidth, -cubeY, ';');
+                calcSurface(cubeX, cubeWidth, cubeY, '+');
             }
         }
         printf("\x1b[H");
@@ -78,6 +86,7 @@ int main() {
         
         A += 0.05;
         B += 0.05;
+        C *= 0.01;
         usleep(8000 * 2);
     }
 
